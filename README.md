@@ -1,10 +1,10 @@
-# 🗽 LibertyJog
+# 🤖 ShopBotJog
 
-[![PyPI version](https://badge.fury.io/py/libertyjog.svg)](https://badge.fury.io/py/libertyjog)
+[![PyPI version](https://badge.fury.io/py/shopbotjog.svg)](https://badge.fury.io/py/shopbotjog)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Liberating rapid jog movements from Fusion 360 ShopBot files**
+**Implementing rapid jog movements in Fusion 360 created ShopBot OpenSBP .sbp files**
 
 ## Overview
 
@@ -44,10 +44,9 @@ M3, 8.4865, 3.8624, -0.475
 Two things to notice.
 
 1. The comment that "rapid moves" are not generated and are behind a paywall.. This really slows down cutting
-2. Shopbot OpenSBP Post uses ONLY M3 commands to move the router head. Move is supposed to be used for cutting, but can also be used to move above the surface. We would prefer that we use Jog commands for moving above the surface more quickly
+2. The Fusion360 Shopbot OpenSBP Post Processor uses ONLY M3 commands for all router movement - both cutting moves and positioning moves above the material. The M3 command runs at cutting speed, which is slow that rapid positioning "Jog" commands. We would prefer to use J3 (jog) commands for rapid positioning moves above the surface since they run at much faster jog speed
 
 The shopbot command reference <https://shopbottools.com/wp-content/uploads/2024/01/SBG00253150707CommandRefV3.pdf>
-
 outlines what each of the commands does. Of special note are `M3` and `J3`:
 
 ```text
@@ -70,96 +69,151 @@ Move Mode setting. If a value is not entered for one of the parameters, the valu
 location assuming a comma is used as a spacer to designate the correct parameter field.
 ```
 
-A more efficient way to move would be to convert the M3 commands to J3 commands. But how do we know which M3s should be jogs?
+A more efficient way to move would be to convert the Fusion 360 generated M3 commands that ae above the work surface to J3 commands. But how do we know which moves (M3) commands should be jogs (J3)?
 In the example code above, we see that there is a `M3, 8.4865, 3.8624, 0.1969` where the Z height is `0.1969`. This matches exactly
-the feed height that was specified in the Fusion tool path operation. My theory is that these commands can be swapped from M3 to J3.
+the feed height that was specified in the Fusion tool path operation. These commands can be swapped from M3 to J3.
 
-This program simply parses the .sbp file, looks for the Z value in all the M3 commands and determines which is the Z height. There should be lots of lines with that exact
-Z value. This is almost certainly the feed height. Our script finds that height, confirms with the user that this is the feed height, then
-edits the .sbp file changing M3 to J3 and adds a comment to the top of the file that it has been modified for speed by this program
-and what we assumed to be the feed height. The original file is automatically backed up with a timestamp.
+ShopBotJog analyzes your .sbp file by:
+
+1. **Scanning** all M3 commands and collecting their Z-heights
+2. **Finding** the most frequently used Z-height above zero (this is almost always the feed height from your Fusion toolpath)
+3. **Confirming** with you that this detected height is correct
+4. **Converting** all M3 commands at that feed height to faster J3 jog commands
+5. **Backing up** your original file with a timestamp before making changes
+6. **Adding** a header comment documenting what was changed and the detected feed height
+
+## Similar Projects
+
+- <https://github.com/thomergil/f360_fastcat> - works on standard gcode, not the shopbot .spb dialect. Handles file concatenation with tool changes which is nice, maybe a feature we can add at a later date.
 
 ## Installation
 
+### From Source (Current)
+
+ShopBotJog is not yet published to PyPI. For now, install from source:
+
+Prequisite - install the uv python package manager <https://docs.astral.sh/uv/getting-started/installation/>
+
 ```bash
-pip install libertyjog
+git clone https://github.com/peterb154/shopbot_jog.git
+cd shopbot_jog
+uv sync
 ```
 
-Or with uv:
+Then run with:
 
 ```bash
-uv add libertyjog
+uv run uv run shopbotjog path/to/your/file.sbp
+```
+
+### From PyPI (Future)
+
+Once published, you'll be able to install with:
+
+```bash
+pip install shopbotjog
+# or
+uv add shopbotjog
 ```
 
 ## Usage
 
 ### Basic Usage
 
-Analyze a file to see what LibertyJog would do:
+Analyze a file to see what ShopBotJog would do:
 
 ```bash
-libertyjog path/to/your/file.sbp --analyze-only
+uv run shopbotjog path/to/your/file.sbp
 ```
 
-Process a file (with confirmation):
+In the example below, we analyze a file and determine that we can save almost 
+six minutes on a very simple 3d contour.
 
-```bash
-libertyjog path/to/your/file.sbp
-```
+```text
+$ uv run shopbotjog artifacts/1001-bevel.sbp -a          
+╭────────────────────────────────────────────────────────────╮
+│ 🤖 ShopBotJog                                              │
+│ Optimizing rapid jog movements in Fusion 360 ShopBot files │
+╰────────────────────────────────────────────────────────────╯
+🔍 Analyzing file: artifacts/1001-bevel.sbp
+            📊 File Analysis             
+┏━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┓
+┃ Metric            ┃ Value             ┃
+┡━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━┩
+│ Total Lines       │ 3436              │
+│ M3 Commands Found │ 3328              │
+│ Z Height Range    │ -0.7677 to 0.5906 │
+└───────────────────┴───────────────────┘
 
-Process a file automatically (no confirmation):
+            🎯 Positioning Heights Analysis             
+┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Height (inches) ┃ Occurrences ┃ Selection            ┃
+┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━┩
+│          0.1969 │          78 │ Feed Height (Target) │
+│          0.5906 │           2 │ Positioning Move     │
+│          0.0373 │           2 │ Positioning Move     │
+│          0.0110 │           2 │ Positioning Move     │
+└─────────────────┴─────────────┴──────────────────────┘
 
-```bash
-libertyjog path/to/your/file.sbp --yes
-```
+💡 Feed height selected as most frequent positioning move: 0.1969 (78 occurrences)
 
-### Advanced Usage
+  🔄 Feed Height Optimization   
+┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┓
+┃ Metric               ┃ Value ┃
+┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━┩
+│ Total M3 Commands    │ 3328  │
+│ Feed Commands        │ 78    │
+│ Cutting Commands     │ 3250  │
+│ Commands to Optimize │ 2.3%  │
+└──────────────────────┴───────┘
 
-Manually specify feed height:
+             ⚡ Feed Movement Time Savings             
+┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Metric               ┃ Value                        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ Current Speed (M3)   │ 90.0 IPM (from MS command)   │
+│ Jog Speed (J3)       │ 300.0 IPM (fallback default) │
+│ Speed Improvement    │ 3.3x faster                  │
+│ Estimated Time Saved │ 5.9 minutes                  │
+└──────────────────────┴──────────────────────────────┘
 
-```bash
-libertyjog path/to/your/file.sbp --feed-height 0.5906
-```
-
-Specify custom output file (no backup created):
-
-```bash
-libertyjog path/to/your/file.sbp --output optimized_file.sbp
-```
-
-Quiet mode (suppress banner and verbose output):
-
-```bash
-libertyjog path/to/your/file.sbp --quiet --yes
-```
-
-Configure speed settings for time calculations:
-
-```bash
-libertyjog path/to/your/file.sbp --cutting-speed 45 --jog-speed 350
+📏 Calculated from 756.7 inches total distance, 9.8 inch average per move
+📊 Analysis complete. Use without --analyze-only to process the file.
 ```
 
 ### Command Line Options
 
-- `--analyze-only`, `-a`: Only analyze the file, don't modify it
-- `--feed-height FLOAT`: Manually specify feed height (skips auto-detection)
-- `--yes`, `-y`: Automatically confirm detected feed height
-- `--output PATH`, `-o`: Custom output file path (default: modifies input file in-place with backup)
-- `--quiet`, `-q`: Suppress banner and verbose output
-- `--cutting-speed FLOAT`: Fallback cutting speed in IPM for time calculations (default: 60)
-- `--jog-speed FLOAT`: Fallback jog speed in IPM for time calculations (default: 300)
+```text
+$ uv run shopbotjog --help
 
-## How It Works
+Usage: shopbotjog [OPTIONS] INPUT_FILE
 
-1. **Analysis**: LibertyJog scans your `.sbp` file for M3 commands and finds the highest Z-value that appears frequently
-2. **Detection**: This most frequently used z height above 0.00 is almost certainly your feed height from Fusion 360
-3. **Conversion**: All M3 commands at this feed height are converted to J3 (jog) commands
-4. **Speed Boost**: Your ShopBot will now use rapid jog speed instead of cutting speed for these movements
-5. **Backup**: Original file is automatically backed up with timestamp before modification
+  ShopBotJog: Convert M3 commands to J3 at feed height for rapid ShopBot
+  operation.
 
-## Example Output
+  Focuses on optimizing feed height movements for maximum speed improvement
+  during positioning moves between cutting operations.
 
-Before LibertyJog:
+  INPUT_FILE: Path to the .sbp file to process
+
+Options:
+  -o, --output PATH      Custom output file path (default: modifies input file
+                         in-place with backup)
+  -y, --yes              Automatically confirm detected feed height
+  -a, --analyze-only     Only analyze the file, don't modify it
+  -q, --quiet            Suppress banner and verbose output
+  --cutting-speed FLOAT  Fallback cutting speed in IPM for time calculations
+                         if MS command not found (default: 60)
+  --jog-speed FLOAT      Fallback jog speed in IPM for time calculations if JS
+                         command not found (default: 300)
+  --feed-height FLOAT    Manually specify feed height (primary optimization
+                         target)
+  --help                 Show this message and exit.
+```
+
+## Example .spb file Conversion
+
+Before ShopBotJog:
 
 ```gcode
 M3, 8.4865, 3.8624, 0.5906  ← Slow cutting speed at retract height
@@ -167,10 +221,10 @@ M3, 8.4865, 3.8624, -0.475  ← Cutting move (stays M3)
 M3, 8.4865, 3.8624, 0.5906  ← Another slow retract move
 ```
 
-After LibertyJog:
+After ShopBotJog:
 
 ```gcode
-' File modified by LibertyJog v0.1.0
+' File modified by ShopBotJog v0.1.0
 ' Feed height detected as: 0.5906
 ' M3 commands at feed height converted to J3 for rapid jogging
 ' Original file: your_file.sbp
@@ -185,8 +239,8 @@ J3, 8.4865, 3.8624, 0.5906  ← Another rapid jog move! 🚀
 ### Setup
 
 ```bash
-git clone https://github.com/peterb154/libertyjog.git
-cd libertyjog
+git clone https://github.com/peterb154/shopbot_jog.git
+cd shopbot_jog
 make dev  # Install dev dependencies
 ```
 
@@ -209,10 +263,10 @@ If you prefer to run commands directly:
 
 ```bash
 uv run pytest                    # Run tests
-uv run pytest --cov=libertyjog   # Run tests with coverage
+uv run pytest --cov=shopbotjog   # Run tests with coverage
 uv run ruff check .              # Run linter
 uv run ruff format .             # Format code
-uv run mypy src/libertyjog       # Type checking
+uv run mypy src/shopbotjog       # Type checking
 ```
 
 ## License

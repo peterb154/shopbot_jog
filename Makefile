@@ -12,7 +12,7 @@ help:
 
 # Run tests
 test:
-	uv run pytest --cov=libertyjog --cov-report=term-missing
+	uv run pytest --cov=shopbotjog --cov-report=term-missing
 
 
 # Run all linting checks (check only, no fixes)
@@ -22,7 +22,7 @@ lint:
 	@echo "Checking code formatting..."
 	uv run ruff format --check .
 	@echo "Running mypy type checking..."
-	uv run mypy src/libertyjog
+	uv run mypy src/shopbotjog
 
 # Fix all linting issues
 lint-fix:
@@ -31,11 +31,11 @@ lint-fix:
 	@echo "Formatting code..."
 	uv run ruff format .
 	@echo "Running mypy type checking..."
-	uv run mypy src/libertyjog
+	uv run mypy src/shopbotjog
 
 # Run type checking only
 typecheck:
-	uv run mypy src/libertyjog
+	uv run mypy src/shopbotjog
 
 # Clean up temporary files
 clean:

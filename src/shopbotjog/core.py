@@ -1,4 +1,4 @@
-"""Core LibertyJog processing functionality."""
+"""Core ShopBotJog processing functionality."""
 
 import re
 import shutil
@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 
-class LibertyJogProcessor:
+class ShopBotJogProcessor:
     """Processes ShopBot .sbp files to optimize rapid movements."""
 
     def __init__(self) -> None:
@@ -287,7 +287,7 @@ class LibertyJogProcessor:
 
         Args:
             input_path: Path to input .sbp file
-            output_path: Path for output file (defaults to input_path with _libertyjog suffix)
+            output_path: Path for output file (defaults to input_path with _shopbotjog suffix)
             positioning_heights: List of Z heights to convert (clearance, retract, etc.)
             retract_height: Single Z height (legacy, use positioning_heights instead)
             confirm_retract: Whether heights need confirmation
@@ -346,7 +346,7 @@ class LibertyJogProcessor:
             output_lines = []
 
             # Write header comment
-            output_lines.append(f"' File modified by LibertyJog v{self._get_version()}\n")
+            output_lines.append(f"' File modified by ShopBotJog v{self._get_version()}\n")
             if len(positioning_heights) == 1:
                 output_lines.append(f"' Feed height detected as: {positioning_heights[0]}\n")
             else:
@@ -386,7 +386,7 @@ class LibertyJogProcessor:
             assert output_path is not None
             with open(input_path, encoding="utf-8") as infile, open(output_path, "w", encoding="utf-8") as outfile:
                 # Write header comment
-                outfile.write(f"' File modified by LibertyJog v{self._get_version()}\n")
+                outfile.write(f"' File modified by ShopBotJog v{self._get_version()}\n")
                 if len(positioning_heights) == 1:
                     outfile.write(f"' Feed height detected as: {positioning_heights[0]}\n")
                 else:

@@ -1,4 +1,4 @@
-"""Tests for LibertyJog core functionality."""
+"""Tests for ShopBotJog core functionality."""
 
 import tempfile
 from pathlib import Path
@@ -6,15 +6,15 @@ from unittest.mock import patch
 
 import pytest
 
-from libertyjog.core import LibertyJogProcessor
+from shopbotjog.core import ShopBotJogProcessor
 
 
-class TestLibertyJogProcessor:
-    """Test cases for the LibertyJogProcessor class."""
+class TestShopBotJogProcessor:
+    """Test cases for the ShopBotJogProcessor class."""
 
     def setup_method(self) -> None:
         """Set up test fixtures."""
-        self.processor = LibertyJogProcessor()
+        self.processor = ShopBotJogProcessor()
 
     def test_init(self) -> None:
         """Test processor initialization."""
@@ -155,7 +155,7 @@ class TestLibertyJogProcessor:
             with open(output_path) as f:
                 output_content = f.read()
 
-            assert "LibertyJog" in output_content
+            assert "ShopBotJog" in output_content
             assert "Feed height detected as: 0.5906" in output_content
             assert "J3, 1.0, 2.0, 0.5906" in output_content
             assert "J3, 1.2, 2.2, 0.5906" in output_content
@@ -214,7 +214,7 @@ class TestLibertyJogProcessor:
         finally:
             temp_path.unlink()
 
-    @patch("libertyjog.core.LibertyJogProcessor._get_version")
+    @patch("shopbotjog.core.ShopBotJogProcessor._get_version")
     def test_get_version_with_import(self, mock_get_version) -> None:
         """Test version retrieval."""
         mock_get_version.return_value = "0.1.0"
@@ -259,7 +259,7 @@ class TestLibertyJogProcessor:
             if "result" in locals() and "backup_file" in result:
                 Path(result["backup_file"]).unlink(missing_ok=True)
             # Clean up auto-generated output file
-            output_path = input_path.parent / f"{input_path.stem}_libertyjog.sbp"
+            output_path = input_path.parent / f"{input_path.stem}_shopbotjog.sbp"
             output_path.unlink(missing_ok=True)
 
     def test_backup_creation_failure(self) -> None:
@@ -361,7 +361,7 @@ class TestRealArtifacts:
 
     def setup_method(self) -> None:
         """Set up test fixtures."""
-        self.processor = LibertyJogProcessor()
+        self.processor = ShopBotJogProcessor()
         self.artifacts_dir = Path(__file__).parent.parent / "artifacts"
 
     def test_analyze_real_roughing_pass(self) -> None:
@@ -424,7 +424,7 @@ class TestRealArtifacts:
             # Check that it has the header
             with open(output_path) as f:
                 first_lines = f.read(200)
-                assert "LibertyJog" in first_lines
+                assert "ShopBotJog" in first_lines
 
         finally:
             if output_path.exists():

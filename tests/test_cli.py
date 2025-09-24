@@ -1,4 +1,4 @@
-"""Tests for LibertyJog CLI interface."""
+"""Tests for ShopBotJog CLI interface."""
 
 import tempfile
 from pathlib import Path
@@ -7,7 +7,7 @@ from unittest.mock import patch
 import pytest
 from click.testing import CliRunner
 
-from libertyjog.cli import main
+from shopbotjog.cli import main
 
 
 class TestCLI:
@@ -27,7 +27,7 @@ class TestCLI:
         """Test CLI help message."""
         result = self.runner.invoke(main, ["--help"])
         assert result.exit_code == 0
-        assert "LibertyJog" in result.output
+        assert "ShopBotJog" in result.output
         assert "INPUT_FILE" in result.output
 
     def test_cli_nonexistent_file(self) -> None:
@@ -179,7 +179,7 @@ class TestCLI:
         finally:
             temp_file.unlink()
 
-    @patch("libertyjog.cli.Confirm.ask")
+    @patch("shopbotjog.cli.Confirm.ask")
     def test_cli_user_confirms_retract_height(self, mock_confirm) -> None:
         """Test CLI when user confirms detected retract height."""
         mock_confirm.return_value = True
@@ -203,8 +203,8 @@ class TestCLI:
             for backup in temp_file.parent.glob(f"{temp_file.name}.*.backup"):
                 backup.unlink()
 
-    @patch("libertyjog.cli.FloatPrompt.ask")
-    @patch("libertyjog.cli.Confirm.ask")
+    @patch("shopbotjog.cli.FloatPrompt.ask")
+    @patch("shopbotjog.cli.Confirm.ask")
     def test_cli_user_rejects_retract_height(self, mock_confirm, mock_prompt) -> None:
         """Test CLI when user rejects detected retract height."""
         mock_confirm.return_value = False
@@ -244,7 +244,7 @@ class TestCLI:
 
         try:
             # Simulate KeyboardInterrupt during processing
-            with patch("libertyjog.cli.console.print") as mock_print:
+            with patch("shopbotjog.cli.console.print") as mock_print:
                 mock_print.side_effect = KeyboardInterrupt()
                 result = self.runner.invoke(main, [str(temp_file), "--yes", "--quiet"])
                 assert result.exit_code != 0

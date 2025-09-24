@@ -1,14 +1,14 @@
 [project]
-name = "libertyjog"
+name = "shopbot_jog"
 version = "0.1.0"
-description = "LibertyJog: Liberating rapid jog movements from Fusion 360 ShopBot files"
+description = "ShopbotJog: Add rapid jog movements from Fusion 360 OpenSBP created files"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "click>=8.0.0",
     "rich>=13.0.0"
 ]
-keywords = ["fusion360", "shopbot", "cnc", "gcode", "optimization"]
+keywords = ["fusion360", "shopbot", "opensbp", "cnc", "gcode", "optimization"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Manufacturing",
@@ -28,22 +28,22 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/brianpeterson/libertyjog"
-Repository = "https://github.com/brianpeterson/libertyjog"
-Issues = "https://github.com/brianpeterson/libertyjog/issues"
+Homepage = "https://github.com/peterb154/shopbot_jog"
+Repository = "https://github.com/peterb154/shopbot_jog"
+Issues = "https://github.com/peterb154/shopbot_jog/issues"
 
 [project.scripts]
-libertyjog = "libertyjog.cli:main"
+shopbotjog = "shopbotjog.cli:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
-path = "src/libertyjog/__init__.py"
+path = "src/shopbotjog/__init__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/libertyjog"]
+packages = ["src/shopbotjog"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

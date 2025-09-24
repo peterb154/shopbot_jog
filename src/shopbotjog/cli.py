@@ -1,4 +1,4 @@
-"""Command-line interface for LibertyJog."""
+"""Command-line interface for ShopBotJog."""
 
 from pathlib import Path
 
@@ -9,15 +9,15 @@ from rich.prompt import Confirm, FloatPrompt
 from rich.table import Table
 from rich.text import Text
 
-from .core import LibertyJogProcessor
+from .core import ShopBotJogProcessor
 
 console = Console()
 
 
 def print_banner() -> None:
-    """Print the LibertyJog banner."""
-    banner = Text("🗽 LibertyJog", style="bold blue")
-    subtitle = Text("Liberating rapid jog movements from Fusion 360 ShopBot files", style="dim")
+    """Print the ShopBotJog banner."""
+    banner = Text("🤖 ShopBotJog", style="bold blue")
+    subtitle = Text("Optimizing rapid jog movements in Fusion 360 ShopBot files", style="dim")
     console.print(Panel.fit(f"{banner}\n{subtitle}", border_style="blue"))
 
 
@@ -214,7 +214,7 @@ def main(
     jog_speed: float,
     feed_height: float | None,
 ) -> None:
-    """LibertyJog: Convert M3 commands to J3 at feed height for rapid ShopBot operation.
+    """ShopBotJog: Convert M3 commands to J3 at feed height for rapid ShopBot operation.
 
     Focuses on optimizing feed height movements for maximum speed improvement during
     positioning moves between cutting operations.
@@ -224,7 +224,7 @@ def main(
     if not quiet:
         print_banner()
 
-    processor = LibertyJogProcessor()
+    processor = ShopBotJogProcessor()
     # Configure speeds for time calculations
     processor.cutting_speed_ipm = cutting_speed
     processor.jog_speed_ipm = jog_speed
@@ -332,7 +332,7 @@ def main(
     except Exception as e:
         console.print(f"❌ [red]Unexpected error: {e!s}[/red]")
         if not quiet:
-            console.print("Please report this issue at: https://github.com/brianpeterson/libertyjog/issues")
+            console.print("Please report this issue at: https://github.com/peterb154/shopbot_jog/issues")
         raise click.Abort()
 
 
