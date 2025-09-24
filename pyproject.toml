@@ -1,0 +1,74 @@
+[project]
+name = "libertyjog"
+version = "0.1.0"
+description = "LibertyJog: Liberating rapid jog movements from Fusion 360 ShopBot files"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.0.0",
+    "rich>=13.0.0"
+]
+keywords = ["fusion360", "shopbot", "cnc", "gcode", "optimization"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Manufacturing",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "hatch>=1.8.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/brianpeterson/libertyjog"
+Repository = "https://github.com/brianpeterson/libertyjog"
+Issues = "https://github.com/brianpeterson/libertyjog/issues"
+
+[project.scripts]
+libertyjog = "libertyjog.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/libertyjog/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/libertyjog"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "RUF"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.2",
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.13.1",
+]
